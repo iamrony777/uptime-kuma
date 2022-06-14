@@ -28,8 +28,11 @@ async def check_local_data() -> None:
         return
     async with aiofiles.open('./protonservers.json', 'w', encoding='UTF-8') as write_servers:
         async with AsyncClient() as client:
-            await write_servers.write(json.dumps((await client.get(LOGICALS_URL)).json()))
-            return
+            try:
+                await write_servers.write(json.dumps((await client.get(LOGICALS_URL)).json()))
+                return
+            except Exception:
+                return
 
 
 async def check_current_ip() -> str:
@@ -40,9 +43,9 @@ async def check_current_ip() -> str:
 
 async def main() -> None:
     """Main function"""
-    await check_local_data()
-    proton_servers = await get_ip_list()
     while True:
+        await check_local_data()
+        proton_servers = await get_ip_list()
         if proton_servers is not None:
             my_ip = await check_current_ip()
             if my_ip in proton_servers:
@@ -50,7 +53,9 @@ async def main() -> None:
                 break
             print(f'You are not connected to ProtonVPN [{my_ip}]')
             await asyncio.sleep(120)
-        asyncio.sleep(120)
+        print('Connection Error')
+        os.remove('protonservers.json')
+        await asyncio.sleep(120)
         continue
 
 
