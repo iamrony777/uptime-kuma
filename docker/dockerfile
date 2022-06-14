@@ -13,40 +13,44 @@ WORKDIR /app
 
 # Copy app files from build layer
 COPY --from=build /app /app
+RUN pip install --no-cache-dir -U pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt && \
+    chmod +x /app/start.sh
 
 EXPOSE 3001
 VOLUME ["/app/data"]
 HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 CMD node extra/healthcheck.js
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "extra/entrypoint.sh"]
-CMD ["node", "server/server.js"]
+# CMD ["node", "server/server.js"]
+CMD ["bash", "start.sh"]
 
 
-FROM release AS nightly
-RUN npm run mark-as-nightly
+# FROM release AS nightly
+# RUN npm run mark-as-nightly
 
 
 # Upload the artifact to Github
-FROM louislam/uptime-kuma:base-debian AS upload-artifact
-WORKDIR /
-RUN apt update && \
-    apt --yes install curl file
+# FROM louislam/uptime-kuma:base-debian AS upload-artifact
+# WORKDIR /
+# RUN apt update && \
+#     apt --yes install curl file
 
-COPY --from=build /app /app
+# COPY --from=build /app /app
 
-ARG VERSION
-ARG GITHUB_TOKEN
-ARG TARGETARCH
-ARG PLATFORM=debian
-ARG FILE=$PLATFORM-$TARGETARCH-$VERSION.tar.gz
-ARG DIST=dist.tar.gz
+# ARG VERSION
+# ARG GITHUB_TOKEN
+# ARG TARGETARCH
+# ARG PLATFORM=debian
+# ARG FILE=$PLATFORM-$TARGETARCH-$VERSION.tar.gz
+# ARG DIST=dist.tar.gz
 
-RUN chmod +x /app/extra/upload-github-release-asset.sh
+# RUN chmod +x /app/extra/upload-github-release-asset.sh
 
-# Full Build
-# RUN tar -zcvf $FILE app
-# RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=$FILE
+# # Full Build
+# # RUN tar -zcvf $FILE app
+# # RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=$FILE
 
-# Dist only
-RUN cd /app && tar -zcvf $DIST dist
-RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST
+# # Dist only
+# RUN cd /app && tar -zcvf $DIST dist
+# RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST
 
