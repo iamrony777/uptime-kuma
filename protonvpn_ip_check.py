@@ -50,7 +50,7 @@ async def main() -> None:
             my_ip = await check_current_ip()
             if my_ip in proton_servers:
                 print(f'You are connected to ProtonVPN [{my_ip}]')
-                break
+                exit(0)
             print(f'You are not connected to ProtonVPN [{my_ip}]')
             await asyncio.sleep(120)
         print('Connection Error')
