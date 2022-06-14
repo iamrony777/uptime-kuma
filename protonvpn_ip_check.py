@@ -11,12 +11,15 @@ TOKEN = os.getenv('IPINFO_TOKEN')
 async def get_ip_list() -> list[str]:
     """Extract ExitIp from protonservers.json"""
     proton_servers = []
-    async with aiofiles.open('./protonservers.json', 'r', encoding='UTF-8') as read_servers:
-        data = json.loads(await read_servers.read())
-        for logical in data['LogicalServers']:
-            for servers in logical['Servers']:
-                proton_servers.append(servers['ExitIP'])
-    return proton_servers
+    try:
+        async with aiofiles.open('./protonservers.json', 'r', encoding='UTF-8') as read_servers:
+            data = json.loads(await read_servers.read())
+            for logical in data['LogicalServers']:
+                for servers in logical['Servers']:
+                    proton_servers.append(servers['ExitIP'])
+        return proton_servers
+    except Exception:
+        return None
 
 
 async def check_local_data() -> None:
@@ -40,12 +43,15 @@ async def main() -> None:
     await check_local_data()
     proton_servers = await get_ip_list()
     while True:
-        my_ip = await check_current_ip()
-        if my_ip in proton_servers:
-            print(f'You are connected to ProtonVPN [{my_ip}]')
-            break
-        print(f'You are not connected to ProtonVPN [{my_ip}]')
-        await asyncio.sleep(120)
+        if proton_servers is not None:
+            my_ip = await check_current_ip()
+            if my_ip in proton_servers:
+                print(f'You are connected to ProtonVPN [{my_ip}]')
+                break
+            print(f'You are not connected to ProtonVPN [{my_ip}]')
+            await asyncio.sleep(120)
+        asyncio.sleep(120)
+        continue
 
 
 if __name__ == '__main__':
