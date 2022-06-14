@@ -27,7 +27,7 @@ async def check_local_data() -> None:
     if os.path.isfile('./protonservers.json'):
         return
     async with aiofiles.open('./protonservers.json', 'w', encoding='UTF-8') as write_servers:
-        async with AsyncClient() as client:
+        async with AsyncClient(timeout=30) as client:
             try:
                 await write_servers.write(json.dumps((await client.get(LOGICALS_URL)).json()))
                 return
