@@ -65,8 +65,8 @@ jobs:
           file: ./docker/dockerfile
           push: true
           platforms: linux/arm/v7
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: iamrony777/uptimekuma:latest
+
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
