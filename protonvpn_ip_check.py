@@ -8,7 +8,7 @@ LOGICALS_URL = 'https://api.protonvpn.ch/vpn/logicals'
 TOKEN = os.getenv('IPINFO_TOKEN')
 
 
-async def get_ip_list() -> list | None:
+async def get_ip_list() -> list:
     """Extract ExitIp from protonservers.json"""
     proton_servers = []
     try:
